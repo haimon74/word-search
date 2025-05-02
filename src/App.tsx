@@ -7,10 +7,6 @@ type GridSize = 10 | 15 | 20;
 function App() {
   const [selectedSize, setSelectedSize] = useState<GridSize>(10);
 
-  const handleSizeSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSize(Number(event.target.value) as GridSize);
-  };
-
   return (
     <div className="app">
       <WordSearch 

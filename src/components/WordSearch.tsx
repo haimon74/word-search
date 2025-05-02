@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { generateGrid, checkWord, DIRECTIONS } from '../utils/wordSearchUtils';
+import React, { useState, useEffect } from 'react';
+import { generateGrid, DIRECTIONS } from '../utils/wordSearchUtils';
 import { getRandomWords } from '../utils/wordList';
-import '../styles/WordSearch.css';
+import styles from '../styles/WordSearch.module.css';
 
 interface Cell {
   letter: string;
@@ -31,6 +31,7 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
 
   useEffect(() => {
     initializeGame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gridSize]);
 
   const initializeGame = () => {
@@ -234,23 +235,27 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
   };
 
   return (
-    <div className="word-search-container">
-      <div className="game-content">
-        <div className="word-list">
-          <h3>Words to Find:</h3>
-          <div className="words-grid">
+    <div className={styles.wordSearchContainer}>
+      <div className={styles.gameContent}>
+        <div className={styles.wordList}>
+          <h3>Words to Find</h3>
+          <div className={styles.wordsGrid}>
             {words.map((word, index) => (
               <div
-                key={index}
-                className={`word-item ${foundWords.has(word) ? 'found' : ''}`}
+                key={word}
+                className={`${styles.wordItem} ${
+                  foundWords.has(word) ? styles.found : ''
+                }`}
                 style={{ 
                   borderLeft: `4px solid ${HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length]}` 
                 }}
               >
-                <span className="word-text">{word}</span>
+                <span className={styles.wordText}>{word}</span>
                 {!foundWords.has(word) && (
-                  <button 
-                    className={`reveal-button ${revealedWords.has(word) ? 'revealed' : ''}`}
+                  <button
+                    className={`${styles.revealButton} ${
+                      revealedWords.has(word) ? styles.revealed : ''
+                    }`}
                     onClick={() => toggleWordVisibility(word)}
                     title={revealedWords.has(word) ? "Hide word" : "Show word"}
                   >
@@ -261,14 +266,14 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
             ))}
           </div>
         </div>
-        <div className="game-grid-section">
-          <div className="grid-container">
+        <div className={styles.gameGridSection}>
+          <div className={styles.gridContainer}>
             {grid.map((row, rowIndex) => (
-              <div key={rowIndex} className="grid-row">
+              <div key={rowIndex} className={styles.gridRow}>
                 {row.map((cell, colIndex) => (
                   <div
                     key={`${rowIndex}-${colIndex}`}
-                    className={`grid-cell ${cell.isSelected ? 'selected' : ''}`}
+                    className={`${styles.gridCell} ${cell.isSelected ? styles.selected : ''}`}
                     style={{ backgroundColor: cell.color || 'white' }}
                     onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
                     onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
@@ -280,22 +285,21 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
               </div>
             ))}
           </div>
-          
-        </div>
-        <div className="game-controls">
-            <button className="new-game-button" onClick={initializeGame}>
+          <div className={styles.gameControls}>
+            <button className={styles.newGameButton} onClick={initializeGame}>
               New Game
             </button>
-            <select 
-              value={gridSize} 
+            <select
+              className={styles.sizeDropdown}
+              value={gridSize}
               onChange={handleSizeChange}
-              className="size-dropdown"
             >
               <option value={10}>10x10</option>
               <option value={15}>15x15</option>
               <option value={20}>20x20</option>
             </select>
           </div>
+        </div>
       </div>
     </div>
   );
