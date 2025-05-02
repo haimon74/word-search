@@ -1,0 +1,263 @@
+.word-search-container {
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.game-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-center;
+  width: 100%;
+}
+
+.game-grid-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  /* margin-left: 1rem; */
+  align-self: flex-start;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.grid-row {
+  display: flex;
+  gap: 2px;
+}
+
+.grid-cell {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.grid-cell:hover {
+  background-color: #f8f8f8;
+  transform: scale(1.05);
+}
+
+.grid-cell.selected {
+  background-color: #e3f2fd;
+}
+
+.word-list {
+  width: auto;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 1rem;
+  left: 1rem;
+}
+
+.word-list h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.words-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.word-item {
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.word-text {
+  flex: 1;
+  text-align: center;
+}
+
+.reveal-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 1.1rem;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reveal-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.reveal-button.revealed {
+  opacity: 1;
+  color: #2196f3;
+}
+
+.word-item.found {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.word-item.found .word-text {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.word-item.found .reveal-button {
+  display: none;
+}
+
+.new-game-button,
+.size-dropdown {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 150px;
+}
+
+.new-game-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+}
+
+.new-game-button:hover {
+  background-color: #1976d2;
+}
+
+.size-dropdown {
+  background-color: white;
+  border: 2px solid #e0e0e0;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+  width:auto;
+}
+
+.size-dropdown:hover {
+  border-color: #2196f3;
+}
+
+.size-dropdown:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+@media (max-width: 768px) {
+  .game-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game-controls {
+    flex-direction: row;
+    margin-left: 0;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .new-game-button,
+  .size-dropdown {
+    width: auto;
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .word-list {
+    width: 100%;
+    max-width: 600px;
+    position: static;
+  }
+
+  .words-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cell {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .new-game-button,
+  .size-dropdown {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .grid-cell {
+    width: 25px;
+    height: 25px;
+    font-size: 0.9rem;
+  }
+
+  .word-list {
+    padding: 0.8rem;
+  }
+
+  .words-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+
+  .word-item {
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  .reveal-button {
+    font-size: 1rem;
+  }
+} 

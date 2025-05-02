@@ -1,24 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import WordSearch from './components/WordSearch';
 import './App.css';
 
+type GridSize = 10 | 15 | 20;
+
 function App() {
+  const [selectedSize, setSelectedSize] = useState<GridSize>(10);
+
+  const handleSizeSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSize(Number(event.target.value) as GridSize);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <WordSearch 
+        gridSize={selectedSize} 
+        onChangeSize={setSelectedSize} 
+      />
     </div>
   );
 }
