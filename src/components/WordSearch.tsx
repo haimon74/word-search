@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { generateGrid, DIRECTIONS } from '../utils/wordSearchUtils';
 import { getRandomWords } from '../utils/wordList';
-import styles from '../styles/WordSearch.module.css';
+import styles from './styles/WordSearch.module.css';
 
 interface Cell {
   letter: string;
@@ -29,12 +29,7 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [lastClickedCell, setLastClickedCell] = useState<{ row: number; col: number } | null>(null);
 
-  useEffect(() => {
-    initializeGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gridSize]);
-
-  const initializeGame = () => {
+  const initializeGame = useCallback(() => {
     const wordCount = gridSize;
     const randomWords = getRandomWords(wordCount);
     const { grid: newGrid, placedWords } = generateGrid(gridSize, randomWords);
@@ -44,13 +39,41 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
     setRevealedWords(new Set());
     setSelectedCells([]);
     setLastClickedCell(null);
-  };
+  }, [gridSize]);
 
-  const handleMouseDown = (row: number, col: number) => {
+  useEffect(() => {
+    initializeGame();
+  }, [initializeGame]);
+
+  const getCellsBetween = useCallback((
+    start: { row: number; col: number },
+    end: { row: number; col: number }
+  ): { row: number; col: number }[] => {
+    const cells: { row: number; col: number }[] = [];
+    const rowDiff = end.row - start.row;
+    const colDiff = end.col - start.col;
+    
+    if (rowDiff !== 0 && colDiff !== 0 && Math.abs(rowDiff) !== Math.abs(colDiff)) {
+      return cells;
+    }
+
+    const steps = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
+    const rowStep = rowDiff === 0 ? 0 : rowDiff / steps;
+    const colStep = colDiff === 0 ? 0 : colDiff / steps;
+
+    for (let i = 0; i <= steps; i++) {
+      const row = Math.round(start.row + rowStep * i);
+      const col = Math.round(start.col + colStep * i);
+      cells.push({ row, col });
+    }
+
+    return cells;
+  }, []);
+
+  const handleMouseDown = useCallback((row: number, col: number) => {
     setIsDragging(true);
     setSelectedCells([{ row, col }]);
 
-    // Check for word boundary click
     if (lastClickedCell) {
       const cells = getCellsBetween(lastClickedCell, { row, col });
       if (cells.length > 0) {
@@ -87,49 +110,23 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
       }
     }
     setLastClickedCell({ row, col });
-  };
+  }, [lastClickedCell, grid, words, foundWords, getCellsBetween]);
 
-  const getCellsBetween = (
-    start: { row: number; col: number },
-    end: { row: number; col: number }
-  ): { row: number; col: number }[] => {
-    const cells: { row: number; col: number }[] = [];
-    const rowDiff = end.row - start.row;
-    const colDiff = end.col - start.col;
-    
-    // Check if the cells form a straight line
-    if (rowDiff !== 0 && colDiff !== 0 && Math.abs(rowDiff) !== Math.abs(colDiff)) {
-      return cells;
-    }
-
-    const steps = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
-    const rowStep = rowDiff === 0 ? 0 : rowDiff / steps;
-    const colStep = colDiff === 0 ? 0 : colDiff / steps;
-
-    for (let i = 0; i <= steps; i++) {
-      const row = Math.round(start.row + rowStep * i);
-      const col = Math.round(start.col + colStep * i);
-      cells.push({ row, col });
-    }
-
-    return cells;
-  };
-
-  const handleMouseEnter = (row: number, col: number) => {
+  const handleMouseEnter = useCallback((row: number, col: number) => {
     if (isDragging) {
       setSelectedCells(prev => [...prev, { row, col }]);
     }
-  };
+  }, [isDragging]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (selectedCells.length > 0) {
       checkSelectedWord();
     }
     setIsDragging(false);
     setSelectedCells([]);
-  };
+  }, [selectedCells]);
 
-  const checkSelectedWord = () => {
+  const checkSelectedWord = useCallback(() => {
     const selectedWord = selectedCells
       .map(({ row, col }) => grid[row][col].letter)
       .join('');
@@ -163,9 +160,9 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
         return newSet;
       });
     }
-  };
+  }, [selectedCells, grid, words, foundWords]);
 
-  const highlightWord = (cells: { row: number; col: number }[], color: string) => {
+  const highlightWord = useCallback((cells: { row: number; col: number }[], color: string) => {
     setGrid(prevGrid => {
       const newGrid = prevGrid.map(row => [...row]);
       cells.forEach(({ row, col }) => {
@@ -174,9 +171,9 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
       });
       return newGrid;
     });
-  };
+  }, []);
 
-  const toggleWordVisibility = (word: string) => {
+  const toggleWordVisibility = useCallback((word: string) => {
     setRevealedWords(prev => {
       const newSet = new Set(prev);
       if (newSet.has(word)) {
@@ -228,11 +225,55 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
       }
       return newSet;
     });
-  };
+  }, [grid, words, highlightWord]);
 
-  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSizeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     onChangeSize(Number(event.target.value) as 10 | 15 | 20);
-  };
+  }, [onChangeSize]);
+
+  const wordListItems = useMemo(() => 
+    words.map((word, index) => (
+      <div
+        key={word}
+        className={`${styles.wordItem} ${
+          foundWords.has(word) ? styles.found : ''
+        }`}
+        style={{ 
+          borderLeft: `4px solid ${HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length]}` 
+        }}
+      >
+        <span className={styles.wordText}>{word}</span>
+        {!foundWords.has(word) && (
+          <button
+            className={`${styles.revealButton} ${
+              revealedWords.has(word) ? styles.revealed : ''
+            }`}
+            onClick={() => toggleWordVisibility(word)}
+            title={revealedWords.has(word) ? "Hide word" : "Show word"}
+          >
+            👁️
+          </button>
+        )}
+      </div>
+    )), [words, foundWords, revealedWords, toggleWordVisibility]);
+
+  const gridCells = useMemo(() => 
+    grid.map((row, rowIndex) => (
+      <div key={rowIndex} className={styles.gridRow}>
+        {row.map((cell, colIndex) => (
+          <div
+            key={`${rowIndex}-${colIndex}`}
+            className={`${styles.gridCell} ${cell.isSelected ? styles.selected : ''}`}
+            style={{ backgroundColor: cell.color || 'white' }}
+            onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
+            onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
+            onMouseUp={handleMouseUp}
+          >
+            {cell.letter}
+          </div>
+        ))}
+      </div>
+    )), [grid, handleMouseDown, handleMouseEnter, handleMouseUp]);
 
   return (
     <div className={styles.wordSearchContainer}>
@@ -240,50 +281,12 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
         <div className={styles.wordList}>
           <h3>Words to Find</h3>
           <div className={styles.wordsGrid}>
-            {words.map((word, index) => (
-              <div
-                key={word}
-                className={`${styles.wordItem} ${
-                  foundWords.has(word) ? styles.found : ''
-                }`}
-                style={{ 
-                  borderLeft: `4px solid ${HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length]}` 
-                }}
-              >
-                <span className={styles.wordText}>{word}</span>
-                {!foundWords.has(word) && (
-                  <button
-                    className={`${styles.revealButton} ${
-                      revealedWords.has(word) ? styles.revealed : ''
-                    }`}
-                    onClick={() => toggleWordVisibility(word)}
-                    title={revealedWords.has(word) ? "Hide word" : "Show word"}
-                  >
-                    👁️
-                  </button>
-                )}
-              </div>
-            ))}
+            {wordListItems}
           </div>
         </div>
         <div className={styles.gameGridSection}>
           <div className={styles.gridContainer}>
-            {grid.map((row, rowIndex) => (
-              <div key={rowIndex} className={styles.gridRow}>
-                {row.map((cell, colIndex) => (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    className={`${styles.gridCell} ${cell.isSelected ? styles.selected : ''}`}
-                    style={{ backgroundColor: cell.color || 'white' }}
-                    onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
-                    onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
-                    onMouseUp={handleMouseUp}
-                  >
-                    {cell.letter}
-                  </div>
-                ))}
-              </div>
-            ))}
+            {gridCells}
           </div>
           <div className={styles.gameControls}>
             <button className={styles.newGameButton} onClick={initializeGame}>
@@ -305,4 +308,4 @@ const WordSearch: React.FC<WordSearchProps> = ({ gridSize, onChangeSize }) => {
   );
 };
 
-export default WordSearch; 
+export default React.memo(WordSearch); 
